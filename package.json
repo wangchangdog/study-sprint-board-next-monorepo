@@ -1,0 +1,28 @@
+{
+  "name": "study-sprint-board",
+  "version": "0.1.0",
+  "private": true,
+  "description": "チームで学習や制作タスクを管理する Web アプリ — 教育用見本リポジトリ",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "pnpm --filter web exec prisma generate",
+    "db:push": "pnpm --filter web exec prisma db push",
+    "db:migrate": "pnpm --filter web exec prisma migrate dev",
+    "db:seed": "pnpm --filter web exec prisma db seed",
+    "db:studio": "pnpm --filter web exec prisma studio"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.3"
+  },
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=20"
+  }
+}
