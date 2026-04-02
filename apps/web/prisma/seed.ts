@@ -186,7 +186,7 @@ async function main() {
     prisma.task.create({
       data: {
         title: "APIドキュメントの作成",
-        description: "docs/api-spec.mdにエンドポイント仕様を記載する",
+        description: "docs/api/openapi.yamlを正本として更新し、docs/api-spec.mdに補足説明を記載する",
         status: TaskStatus.TODO,
         priority: Priority.LOW,
         assigneeId: user2.id,

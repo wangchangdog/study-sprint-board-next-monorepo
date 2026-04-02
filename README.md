@@ -160,7 +160,8 @@ API 層 (app/api/ — Route Handlers)
 | [architecture.md](docs/architecture.md) | アーキテクチャ概要・設計原則 |
 | [screens.md](docs/screens.md) | 画面一覧・画面遷移 |
 | [er-diagram.md](docs/er-diagram.md) | ER 図・データモデル |
-| [api-spec.md](docs/api-spec.md) | API エンドポイント仕様 |
+| [api/openapi.yaml](docs/api/openapi.yaml) | API 仕様の正本（機械可読な OpenAPI） |
+| [api-spec.md](docs/api-spec.md) | API 仕様の補足説明（教材向け） |
 | [setup.md](docs/setup.md) | 詳細セットアップ手順 |
 | [roadmap.md](docs/roadmap.md) | 今後のロードマップ |
 

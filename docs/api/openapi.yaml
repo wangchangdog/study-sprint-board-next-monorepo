@@ -1,0 +1,371 @@
+openapi: 3.1.0
+info:
+  title: Study Sprint Board API
+  version: 1.0.0
+  description: |
+    Study Sprint Board の機械可読 API 仕様。
+    このファイルを API 仕様の正本として扱う。
+servers:
+  - url: http://localhost:3000
+    description: Local development
+tags:
+  - name: Tasks
+  - name: Dashboard
+paths:
+  /api/tasks:
+    get:
+      tags: [Tasks]
+      summary: タスク一覧取得
+      security:
+        - sessionAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/TaskStatus"
+        - in: query
+          name: priority
+          schema:
+            $ref: "#/components/schemas/Priority"
+        - in: query
+          name: assigneeId
+          schema:
+            type: string
+      responses:
+        "200":
+          description: タスク一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TaskListItem"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+    post:
+      tags: [Tasks]
+      summary: タスク作成
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskInput"
+      responses:
+        "201":
+          description: 作成されたタスク
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskDetail"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  /api/tasks/{taskId}:
+    get:
+      tags: [Tasks]
+      summary: タスク詳細取得
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      responses:
+        "200":
+          description: タスク詳細
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskDetail"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    patch:
+      tags: [Tasks]
+      summary: タスク更新
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskInput"
+      responses:
+        "200":
+          description: 更新されたタスク
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskDetail"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/tasks/{taskId}/comments:
+    post:
+      tags: [Tasks]
+      summary: コメント投稿
+      security:
+        - sessionAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCommentInput"
+      responses:
+        "201":
+          description: 作成されたコメント
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/dashboard/summary:
+    get:
+      tags: [Dashboard]
+      summary: ダッシュボード集計取得
+      security:
+        - sessionAuth: []
+      responses:
+        "200":
+          description: ダッシュボード集計
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: authjs.session-token
+  parameters:
+    TaskId:
+      in: path
+      name: taskId
+      required: true
+      schema:
+        type: string
+  responses:
+    UnauthorizedError:
+      description: 未認証
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFoundError:
+      description: 対象が存在しない
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ValidationError:
+      description: バリデーションエラー
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    TaskStatus:
+      type: string
+      enum: [TODO, IN_PROGRESS, IN_REVIEW, DONE]
+    Priority:
+      type: string
+      enum: [LOW, MEDIUM, HIGH, URGENT]
+    Role:
+      type: string
+      enum: [USER, ADMIN]
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+    UserSummary:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          $ref: "#/components/schemas/Role"
+    Label:
+      type: object
+      required: [id, name, color]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        color:
+          type: string
+    TaskLabel:
+      type: object
+      required: [label]
+      properties:
+        label:
+          $ref: "#/components/schemas/Label"
+    Comment:
+      type: object
+      required: [id, content, author, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        author:
+          $ref: "#/components/schemas/UserSummary"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    TaskListItem:
+      type: object
+      required:
+        [id, title, status, priority, taskLabels, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        status:
+          $ref: "#/components/schemas/TaskStatus"
+        priority:
+          $ref: "#/components/schemas/Priority"
+        dueDate:
+          type: string
+          format: date-time
+          nullable: true
+        assignee:
+          $ref: "#/components/schemas/UserSummary"
+        createdBy:
+          $ref: "#/components/schemas/UserSummary"
+        taskLabels:
+          type: array
+          items:
+            $ref: "#/components/schemas/TaskLabel"
+        _count:
+          type: object
+          properties:
+            comments:
+              type: integer
+    TaskDetail:
+      allOf:
+        - $ref: "#/components/schemas/TaskListItem"
+        - type: object
+          properties:
+            comments:
+              type: array
+              items:
+                $ref: "#/components/schemas/Comment"
+    CreateTaskInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        status:
+          $ref: "#/components/schemas/TaskStatus"
+        priority:
+          $ref: "#/components/schemas/Priority"
+        dueDate:
+          type: string
+          format: date-time
+        assigneeId:
+          type: string
+        labelIds:
+          type: array
+          items:
+            type: string
+    UpdateTaskInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        status:
+          $ref: "#/components/schemas/TaskStatus"
+        priority:
+          $ref: "#/components/schemas/Priority"
+        dueDate:
+          type: string
+          format: date-time
+        assigneeId:
+          type: string
+        labelIds:
+          type: array
+          items:
+            type: string
+    CreateCommentInput:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 2000
+    DashboardSummary:
+      type: object
+      required: [myTaskCount, statusCounts, upcomingTasks, recentTasks]
+      properties:
+        myTaskCount:
+          type: integer
+        statusCounts:
+          type: object
+          properties:
+            TODO:
+              type: integer
+            IN_PROGRESS:
+              type: integer
+            IN_REVIEW:
+              type: integer
+            DONE:
+              type: integer
+        upcomingTasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/TaskListItem"
+        recentTasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/TaskListItem"

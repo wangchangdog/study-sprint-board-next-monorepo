@@ -27,3 +27,5 @@ applyTo: "docs/**/*.md,README.md"
 - コードを変更したらドキュメントも更新する
 - API 仕様、ER 図、画面一覧は実装と常に一致させる
 - ドキュメントに書いてある手順が実際に動くことを確認する
+- API 仕様書は `docs/api/openapi.yaml` を正本とし、`docs/api-spec.md` は人間向け補足として更新する
+- TypeSpec を使う場合でも、最終的に OpenAPI を成果物として参照可能にする

@@ -31,7 +31,8 @@ description: 小さな機能追加を担当するエージェント
    - `pnpm build` — ビルドが成功すること
 
 4. **ドキュメント更新**
-   - `docs/api-spec.md` — 新しい API エンドポイントの仕様
+   - `docs/api/openapi.yaml` — API 仕様の正本
+   - `docs/api-spec.md` — 新しい API エンドポイントの補足説明
    - `docs/screens.md` — 新しい画面の仕様
    - `docs/er-diagram.md` — スキーマ変更がある場合
 
@@ -41,3 +42,4 @@ description: 小さな機能追加を担当するエージェント
 - 1つの機能に関する変更は1つの PR にまとめる
 - 過度な抽象化を避ける
 - `team-dev-curriculum/` は編集しない
+- TypeSpec を使う場合でも、成果物として OpenAPI を更新する
