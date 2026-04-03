@@ -1,5 +1,8 @@
-import { PrismaClient, Role, TaskStatus, Priority } from "@prisma/client";
+import { Priority, PrismaClient, Role, TaskStatus } from "@prisma/client";
 import { hash } from "bcryptjs";
+import { loadMonorepoEnv } from "../lib/monorepo-env";
+
+loadMonorepoEnv(process.cwd());
 
 const prisma = new PrismaClient();
 
