@@ -2,50 +2,54 @@
 
 ## このリポジトリについて
 
-このリポジトリは **教育用の見本プロジェクト** です。4年制専門学校の卒業制作カリキュラムにおいて、チーム開発の標準構成を示すサンプルとして作成されました。
+このリポジトリは `Study Sprint Board` の **Next.js App Router 一体型見本** です。`apps/web` の中に UI、Route Handlers、サービス層、Prisma を同居させ、1 つのアプリでフルスタック構成を読めるようにしています。
 
-## 基本方針
+- 主な変更対象は `apps/web`
+- `packages/` は共通設定と将来拡張用の共有パッケージ
+- 兄弟 repo の SPA/API 構成や Supabase 構成として説明しない
+- `team-dev-curriculum/` は参照対象であり、この repo の通常作業では編集しない
 
-- `apps/web` を中心に変更する
-- 複雑さを増やしすぎない。初学者が追える範囲を維持する
-- 破壊的変更を避ける。既存の動作を壊さないこと
-- 過度な抽象化をしない。責務分離は明確に保つ
+## まず確認するファイル
 
-## コマンド実行
+| 目的 | ファイル |
+| --- | --- |
+| 全体像 | `README.md`, `docs/architecture.md` |
+| セットアップ / 環境変数 | `docs/setup.md`, `apps/web/lib/monorepo-env.ts` |
+| API 契約 | `docs/api/openapi.yaml`, `docs/api-spec.md` |
+| 領域別の詳細ルール | `.github/instructions/web.instructions.md`, `.github/instructions/docs.instructions.md`, `.github/instructions/ci.instructions.md` |
 
-変更前後に以下のコマンドで検証してください。
+## 実行コマンド
 
-```bash
-pnpm lint        # ESLint
-pnpm typecheck   # TypeScript 型チェック
-pnpm test        # Vitest ユニットテスト
-pnpm build       # 本番ビルド
-```
+| 目的 | コマンド |
+| --- | --- |
+| 開発サーバー | `pnpm dev` |
+| lint | `pnpm lint` |
+| typecheck | `pnpm typecheck` |
+| テスト一式 | `pnpm test` |
+| 単体テスト 1 ファイル | `pnpm --filter web test -- tests/unit/validations.test.ts` |
+| build | `pnpm build` |
+| E2E 一式 | `pnpm --filter web test:e2e` |
+| E2E 1 ファイル | `pnpm --filter web test:e2e -- tests/e2e/signin.spec.ts` |
+| Prisma Client 再生成 | `pnpm db:generate` |
 
-上記がすべて通ることを変更のたびに確認してください。
+## 高レベルアーキテクチャ
 
-## 検証手順
+- ルートは `pnpm` ワークスペース + `turbo` で、実アプリは `apps/web` に集約しています。
+- リクエストの主な流れは `app/` の Server Components / Route Handlers → `server/services/` → Prisma → PostgreSQL です。
+- `app/` はルーティングと Route Handlers、`features/` は機能単位 UI、`components/` は汎用 UI、`lib/` は設定とバリデーションに寄せます。
+- `apps/web/lib/monorepo-env.ts` が、アプリ配下に `.env` がない場合は repo ルートの環境変数を読む前提を作っています。テストや Playwright もこの前提で動きます。
 
-1. 変更対象のファイルを特定する
-2. 関連する docs（`docs/` 配下）を確認する
-3. 変更を加える
-4. `pnpm lint && pnpm typecheck && pnpm test && pnpm build` を実行する
-5. 必要に応じて docs も更新する
+| 正本 | 役割 |
+| --- | --- |
+| `docs/api/openapi.yaml` | HTTP 契約の正本 |
+| `apps/web/prisma/schema.prisma` | 永続化モデルの正本 |
+| `docs/api-spec.md` | API 説明の補足資料 |
+| `docs/architecture.md` | 教材としてのレイヤー説明 |
 
-## 禁止事項
+## この repo で重要な約束
 
-- `team-dev-curriculum/` は **編集禁止** です。参照のみ
-- docs と実装をずらさないでください。コードを変更したら、対応する docs も更新する
-- 実行確認なしでコミットしない
-
-## ディレクトリの責務
-
-| ディレクトリ | 責務 |
-|-------------|------|
-| `apps/web/app/` | ページルーティング、Route Handlers |
-| `apps/web/server/services/` | ビジネスロジック、DB アクセス |
-| `apps/web/features/` | 機能単位のコンポーネント群 |
-| `apps/web/lib/` | 設定、ユーティリティ、バリデーション |
-| `apps/web/components/` | 汎用 UI コンポーネント |
-| `packages/` | 共通設定・共通パッケージ |
-| `docs/` | プロジェクトドキュメント |
+- Server Components を基本にし、`"use client"` は状態管理・イベント・ブラウザ API が必要な箇所に限定します。
+- Prisma を `app/` や `features/` から直接 import せず、DB アクセスは `server/services/` に閉じ込めます。
+- 入力検証は `lib/validations.ts` の Zod スキーマを再利用し、Route Handler とフォームで意味をずらしません。
+- API や DB の挙動を変えるときは、実装だけでなく `README.md` と `docs/` の説明も同時に合わせます。
+- 教材 repo なので、過度な抽象化より「どこに何の責務があるか」を追いやすい構造を優先します。
